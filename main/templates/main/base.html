@@ -1,0 +1,208 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}ERP System{% endblock %} - Modern UI</title>
+    <!-- Modern Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Link to the new stylesheet -->
+    <link rel="stylesheet" href="{% static 'main/css/style.css' %}" />
+    <!-- Chart.js for dashboards/reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas "></i> ClothesShop ERP</h3>
+                <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="sidebar-menu">
+                <ul>
+                    <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="icon"><i class="fas fa-tachometer-alt fa-fw"></i></span><span class="menu-text">Dashboard</span></a></li>
+                    <li><a href="{% url 'products' %}" class="{% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'edit_product' %}active{% endif %}"><span class="icon"><i class="fas fa-box-open fa-fw"></i></span><span class="menu-text">Products</span></a></li>
+                    <li><a href="{% url 'sales' %}" class="{% if request.resolver_match.url_name == 'sales' or request.resolver_match.url_name == 'view_sale' or request.resolver_match.url_name == 'delete_sale' %}active{% endif %}"><span class="icon"><i class="fas fa-shopping-cart fa-fw"></i></span><span class="menu-text">Sales</span></a></li>
+                    <li><a href="{% url 'inventory' %}" class="{% if request.resolver_match.url_name == 'inventory' or request.resolver_match.url_name == 'view_inventory' or request.resolver_match.url_name == 'delete_inventory' %}active{% endif %}"><span class="icon"><i class="fas fa-warehouse fa-fw"></i></span><span class="menu-text">Inventory</span></a></li>
+                    <li><a href="{% url 'employees' %}" class="{% if request.resolver_match.url_name == 'employees' or request.resolver_match.url_name == 'employee_detail' or request.resolver_match.url_name == 'edit_employee' or request.resolver_match.url_name == 'delete_employee' %}active{% endif %}"><span class="icon"><i class="fas fa-users fa-fw"></i></span><span class="menu-text">Employees</span></a></li>
+                    <li><a href="{% url 'reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}"><span class="icon"><i class="fas fa-chart-pie fa-fw"></i></span><span class="menu-text">Reports</span></a></li>
+                    <li><a href="{% url 'settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}"><span class="icon"><i class="fas fa-cog fa-fw"></i></span><span class="menu-text">Settings</span></a></li>
+                </ul>
+            </div>
+            <!-- Optional Sidebar Footer -->
+            <!-- <div class="sidebar-footer">
+                <a href="#" class="btn btn-outline-light btn-sm">Help</a>
+            </div> -->
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <header class="header">
+                <h1>{% block header_title %}Page Title{% endblock %}</h1>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search..." id="searchInput" class="form-control" />
+                    </div>
+                    <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                        <i class="fas fa-moon"></i> <!-- Icon changes via JS -->
+                    </button>
+                    <div class="user-profile-dropdown">
+                        <div class="user-profile" id="userProfileTrigger" tabindex="0"> <!-- Made focusable -->
+                            <img src="https://ui-avatars.com/api/?name={{ request.user.username|default:'A' }}&background=random&color=fff&size=40" alt="User Avatar" />
+                            <span>{{ request.user.username|default:'Admin User' }}</span>
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </div>
+                        <div class="dropdown-menu" id="userDropdownMenu">
+                            <a href="{% url 'settings' %}" class="dropdown-item"><i class="fas fa-user-cog fa-fw"></i> Profile Settings</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'logout' %}" class="dropdown-item"><i class="fas fa-sign-out-alt fa-fw"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content-area">
+                {% block content %}
+                <!-- Default content if block is empty -->
+                <p>Welcome to the ERP System. Select an option from the sidebar to get started.</p>
+                {% endblock %}
+            </main>
+
+            <footer class="footer mt-auto py-3 bg-light">
+              <div class="container text-center">
+                <span class="text-muted">© {% now "Y" %} ERP Suite. All rights reserved.</span>
+              </div>
+            </footer>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Sidebar Toggle --- 
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mainContent = document.getElementById('mainContent');
+            const SIDEBAR_COLLAPSED_KEY = 'sidebarCollapsed';
+
+            // Function to apply sidebar state
+            function applySidebarState(collapsed) {
+                if (collapsed) {
+                    sidebar.classList.add('collapsed');
+                    mainContent.classList.add('expanded'); // Assuming 'expanded' class adjusts margin
+                    sidebarToggle.title = 'Expand Sidebar';
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    mainContent.classList.remove('expanded');
+                    sidebarToggle.title = 'Collapse Sidebar';
+                }
+            }
+
+            // Check local storage for saved state
+            const isSidebarCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+            applySidebarState(isSidebarCollapsed);
+
+            // Toggle sidebar on button click
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function () {
+                    const collapsed = sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed);
+                    sidebarToggle.title = collapsed ? 'Expand Sidebar' : 'Collapse Sidebar';
+                });
+            }
+
+            // --- Theme Toggle --- 
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            const THEME_KEY = 'themePreference';
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+            // Function to apply theme
+            function applyTheme(theme) {
+                const icon = themeToggle ? themeToggle.querySelector('i') : null;
+                if (theme === 'dark') {
+                    body.classList.add('dark-mode');
+                    if(icon) icon.classList.replace('fa-moon', 'fa-sun');
+                    if(themeToggle) themeToggle.title = 'Switch to Light Mode';
+                } else {
+                    body.classList.remove('dark-mode');
+                    if(icon) icon.classList.replace('fa-sun', 'fa-moon');
+                    if(themeToggle) themeToggle.title = 'Switch to Dark Mode';
+                }
+            }
+
+            // Get saved theme or system preference
+            let currentTheme = localStorage.getItem(THEME_KEY);
+            if (!currentTheme) {
+                currentTheme = prefersDark.matches ? 'dark' : 'light';
+            }
+            applyTheme(currentTheme);
+
+            // Toggle theme on button click
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    currentTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+                    localStorage.setItem(THEME_KEY, currentTheme);
+                    applyTheme(currentTheme);
+                });
+            }
+
+            // Listen for system theme changes
+            prefersDark.addEventListener('change', (e) => {
+                // Only change if no explicit preference is saved
+                if (!localStorage.getItem(THEME_KEY)) {
+                    currentTheme = e.matches ? 'dark' : 'light';
+                    applyTheme(currentTheme);
+                }
+            });
+
+            // --- User Profile Dropdown --- 
+            const userProfileTrigger = document.getElementById('userProfileTrigger');
+            const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+            if (userProfileTrigger && userDropdownMenu) {
+                userProfileTrigger.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent click from closing menu immediately
+                    userDropdownMenu.classList.toggle('show');
+                    userProfileTrigger.setAttribute('aria-expanded', userDropdownMenu.classList.contains('show'));
+                });
+
+                // Close dropdown if clicked outside
+                document.addEventListener('click', (event) => {
+                    if (!userProfileTrigger.contains(event.target) && !userDropdownMenu.contains(event.target)) {
+                        userDropdownMenu.classList.remove('show');
+                        userProfileTrigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                
+                // Close dropdown on Escape key
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && userDropdownMenu.classList.contains('show')) {
+                        userDropdownMenu.classList.remove('show');
+                        userProfileTrigger.setAttribute('aria-expanded', 'false');
+                        userProfileTrigger.focus(); // Return focus to trigger
+                    }
+                });
+            }
+
+            // --- Active Sidebar Link --- 
+
+            // No additional JS needed unless more complex client-side logic is required.
+
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

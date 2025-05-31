@@ -1,0 +1,34 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Confirm Delete Employee | ERP Suite{% endblock %}
+
+{% block header_title %}Confirm Employee Deletion{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Confirm Deletion</h4>
+                </div>
+                <div class="card-body">
+                    <p class="card-text fs-5">Are you sure you want to delete the employee:</p>
+                    <h3 class="text-center my-3">{{ employee.name }}</h3>
+                    <p class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i> This action cannot be undone. All associated data might be lost.</p>
+                    
+                    <form method="post" action="{% url 'delete_employee' employee.id %}" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary"><i class="fas fa-times me-1"></i> Cancel</a>
+                            <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt me-1"></i> Yes, Delete Employee</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

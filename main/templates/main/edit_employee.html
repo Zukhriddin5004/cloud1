@@ -1,0 +1,63 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Edit Employee: {{ employee.name }} | ERP Suite{% endblock %}
+
+{% block header_title %}Edit Employee{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h3 class="form-title">Editing: {{ employee.name }}</h3>
+        <p class="text-muted">Update the employee's details below.</p>
+    </div>
+
+    <form method="post" action="{% url 'edit_employee' employee.id %}">
+        {% csrf_token %}
+        
+        <div class="row g-3">
+            <div class="col-md-6 form-group">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ employee.name }}" required>
+            </div>
+
+            <div class="col-md-6 form-group">
+                <label for="position" class="form-label">Position</label>
+                <input type="text" id="position" name="position" class="form-control" value="{{ employee.position }}">
+            </div>
+
+            <div class="col-md-6 form-group">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="tel" id="phone" name="phone" class="form-control" value="{{ employee.phone }}">
+            </div>
+
+            <div class="col-md-6 form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ employee.email }}">
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <h4 class="mb-3">User Account (Optional)</h4>
+        <div class="row g-3">
+             <div class="col-md-6 form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" value="{{ employee.user.username|default:'' }}" {% if not employee.user %}disabled{% endif %}>
+                 <div class="form-text">Username cannot be changed if account exists.</div>
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="new_password" class="form-label">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="form-control" placeholder="Leave blank to keep current password">
+                <div class="form-text">Enter a new password to update it.</div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary"><i class="fas fa-times me-1"></i> Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

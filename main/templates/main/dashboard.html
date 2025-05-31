@@ -1,0 +1,346 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | ERP Suite{% endblock %}
+
+{% block header_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<!-- Dashboard Cards -->
+<div class="dashboard-cards">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title-group">
+                <h3 class="card-title">Total Sales</h3>
+                <p class="card-label">Total revenue generated</p>
+            </div>
+            <div class="card-icon primary">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+        </div>
+        <div class="card-value">${{ total_sales_amount }}</div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+             <div class="card-title-group">
+                <h3 class="card-title">Products</h3>
+                <p class="card-label">Total unique products</p>
+            </div>
+            <div class="card-icon success">
+                <i class="fas fa-box-open"></i>
+            </div>
+        </div>
+        <div class="card-value">{{ total_products }}</div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+             <div class="card-title-group">
+                <h3 class="card-title">Low Stock Items</h3>
+                 <p class="card-label">Needs restocking soon</p>
+            </div>
+            <div class="card-icon warning">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+        <div class="card-value">{{ low_stock_count }}</div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+             <div class="card-title-group">
+                <h3 class="card-title">Employees</h3>
+                <p class="card-label">Active team members</p>
+            </div>
+            <div class="card-icon info"> <!-- Changed icon color -->
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="card-value">{{ total_employees }}</div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="charts-container">
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">Sales Analytics</h3>
+            <div class="chart-actions">
+                <!-- Add JS to handle this filtering -->
+                <button class="btn btn-sm btn-outline-primary time-filter active" data-period="daily">Daily</button>
+                <button class="btn btn-sm btn-outline-primary time-filter" data-period="weekly">Weekly</button>
+                <button class="btn btn-sm btn-outline-primary time-filter" data-period="monthly">Monthly</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">Sales by Category</h3>
+        </div>
+        <div class="chart-container">
+            <canvas id="categoriesChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Section (Combined) -->
+<div class="row">
+    <div class="col-lg-7 mb-4">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">Recent Sales</h3>
+                <div class="table-actions">
+                    <a href="{% url 'add_sale' %}" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> New Sale</a>
+                    <button class="btn btn-sm btn-outline-secondary" id="exportSalesBtn"><i class="fas fa-download"></i> Export</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Employee</th>
+                            <th>Date</th>
+                            <th>Qty</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in recent_sales %}
+                        <tr>
+                            <td>{{ sale.product.name }}</td>
+                            <td>{{ sale.employee.name }}</td>
+                            <td>{{ sale.date_time|date:"M d, Y H:i" }}</td>
+                            <td>{{ sale.quantity }}</td>
+                            <td>${{ sale.price }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No recent sales recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5 mb-4">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">Low Stock Alert</h3>
+                 <div class="table-actions">
+                     <a href="{% url 'inventory' %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-warehouse"></i> View Inventory</a>
+                 </div>
+            </div>
+             <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in low_stock_products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.stock_quantity }}</td>
+                            <td>
+                                <span class="status {% if product.stock_quantity == 0 %}status-danger{% else %}status-warning{% endif %}">
+                                    {% if product.stock_quantity == 0 %}Out of Stock{% else %}Low Stock{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'add_inventory' %}" class="btn btn-sm btn-secondary">Add Stock</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">All products have sufficient stock.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    const labelColor = isDarkMode ? '#adb5bd' : '#6c757d';
+    const pointColor = isDarkMode ? '#58a6ff' : '#3498db'; // Use primary color variants
+    const areaBgColor = isDarkMode ? 'rgba(88, 166, 255, 0.1)' : 'rgba(52, 152, 219, 0.1)';
+    const lineColor = isDarkMode ? '#58a6ff' : '#3498db';
+
+    // --- Sales Chart --- 
+    const salesCtx = document.getElementById('salesChart')?.getContext('2d');
+    let salesChartInstance;
+    if (salesCtx) {
+        salesChartInstance = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: {{ sales_dates|safe }},
+                datasets: [{
+                    label: 'Sales',
+                    data: {{ sales_data|safe }},
+                    backgroundColor: areaBgColor,
+                    borderColor: lineColor,
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: pointColor,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor },
+                        ticks: { color: labelColor }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: labelColor }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDarkMode ? '#212529' : '#fff',
+                        titleColor: isDarkMode ? '#f8f9fa' : '#212529',
+                        bodyColor: isDarkMode ? '#f8f9fa' : '#212529',
+                        borderColor: isDarkMode ? '#444c56' : '#dee2e6',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Categories Chart --- 
+    const categoriesCtx = document.getElementById('categoriesChart')?.getContext('2d');
+    if (categoriesCtx) {
+        new Chart(categoriesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ category_names|safe }},
+                datasets: [{
+                    data: {{ category_data|safe }},
+                    backgroundColor: [
+                        '#4A90E2', // primary
+                        '#50E3C2', // secondary
+                        '#B8E986', // light green
+                        '#F5A623', // warning
+                        '#7ED321', // another green
+                        '#9013FE', // purple
+                        '#417505', // dark green
+                        '#E94E77'  // danger
+                    ],
+                    borderColor: isDarkMode ? '#1c2128' : '#fff', // Match background
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: labelColor }
+                    },
+                     tooltip: {
+                        backgroundColor: isDarkMode ? '#212529' : '#fff',
+                        titleColor: isDarkMode ? '#f8f9fa' : '#212529',
+                        bodyColor: isDarkMode ? '#f8f9fa' : '#212529',
+                        borderColor: isDarkMode ? '#444c56' : '#dee2e6',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Time filter functionality --- 
+    document.querySelectorAll('.time-filter').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.time-filter').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            const period = this.dataset.period;
+            
+            // Example: Fetch data (replace with your actual API endpoint)
+            fetch(`/api/sales-data/?period=${period}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                 })
+                .then(data => {
+                    if (salesChartInstance) {
+                        salesChartInstance.data.labels = data.labels;
+                        salesChartInstance.data.datasets[0].data = data.values;
+                        salesChartInstance.update();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching sales data:', error);
+                    // Optionally display an error message to the user
+                });
+        });
+    });
+
+    // --- Export functionality --- 
+    const exportBtn = document.getElementById('exportSalesBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            // Replace with your actual export URL or logic
+            console.log('Exporting sales data...');
+            // Example: window.location.href = '/export/sales/';
+        });
+    }
+    
+    // Update chart colors on theme change
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+             // Small delay to allow body class to update
+            setTimeout(() => {
+                const newIsDarkMode = document.body.classList.contains('dark-mode');
+                const newGridColor = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                const newLabelColor = newIsDarkMode ? '#adb5bd' : '#6c757d';
+                
+                if (salesChartInstance) {
+                    salesChartInstance.options.scales.y.grid.color = newGridColor;
+                    salesChartInstance.options.scales.x.grid.color = newGridColor;
+                    salesChartInstance.options.scales.y.ticks.color = newLabelColor;
+                    salesChartInstance.options.scales.x.ticks.color = newLabelColor;
+                    // Update tooltip colors if needed
+                    salesChartInstance.options.plugins.tooltip.backgroundColor = newIsDarkMode ? '#212529' : '#fff';
+                    salesChartInstance.options.plugins.tooltip.titleColor = newIsDarkMode ? '#f8f9fa' : '#212529';
+                    salesChartInstance.options.plugins.tooltip.bodyColor = newIsDarkMode ? '#f8f9fa' : '#212529';
+                    salesChartInstance.options.plugins.tooltip.borderColor = newIsDarkMode ? '#444c56' : '#dee2e6';
+                    salesChartInstance.update();
+                }
+                // Update categories chart legend/tooltip colors if needed
+                // ... (similar logic for categoriesChart)
+            }, 50);
+        });
+    }
+});
+</script>
+{% endblock %}
+

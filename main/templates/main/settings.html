@@ -1,0 +1,197 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Settings | ERP Suite{% endblock %}
+
+{% block header_title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- General Settings -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-cog me-2"></i>General Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">Company Name</label>
+                        <input type="text" id="company_name" name="company_name" class="form-control" value="{{ settings.company_name|default:'ERP Suite' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="currency_symbol" class="form-label">Currency Symbol</label>
+                        <input type="text" id="currency_symbol" name="currency_symbol" class="form-control" value="{{ settings.currency_symbol|default:'$' }}" style="width: 80px;">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="fiscal_year_start" class="form-label">Fiscal Year Start</label>
+                            <input type="date" id="fiscal_year_start" name="fiscal_year_start" class="form-control" value="{{ settings.fiscal_year_start|date:'Y-m-d'|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fiscal_year_end" class="form-label">Fiscal Year End</label>
+                            <input type="date" id="fiscal_year_end" name="fiscal_year_end" class="form-control" value="{{ settings.fiscal_year_end|date:'Y-m-d'|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tax_rate" class="form-label">Default Tax Rate (%)</label>
+                        <input type="number" id="tax_rate" name="tax_rate" step="0.01" min="0" class="form-control" value="{{ settings.tax_rate|default:'0.00' }}">
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" name="general_settings" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save General Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-bell me-2"></i>Notification Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="low_stock_threshold" class="form-label">Low Stock Threshold</label>
+                        <input type="number" id="low_stock_threshold" name="low_stock_threshold" min="0" class="form-control" value="{{ settings.low_stock_threshold|default:'10' }}">
+                        <div class="form-text">Products with stock below this threshold will be marked as "Low Stock".</div>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" {% if settings.email_notifications %}checked{% endif %}>
+                        <label class="form-check-label" for="email_notifications">Enable Email Notifications (Global)</label>
+                    </div>
+                    <div class="form-check form-switch mb-2 ms-3">
+                        <input class="form-check-input" type="checkbox" id="low_stock_alerts" name="low_stock_alerts" {% if settings.low_stock_alerts %}checked{% endif %} {% if not settings.email_notifications %}disabled{% endif %}>
+                        <label class="form-check-label" for="low_stock_alerts">Low Stock Alerts</label>
+                    </div>
+                    <div class="form-check form-switch mb-3 ms-3">
+                        <input class="form-check-input" type="checkbox" id="sales_notifications" name="sales_notifications" {% if settings.sales_notifications %}checked{% endif %} {% if not settings.email_notifications %}disabled{% endif %}>
+                        <label class="form-check-label" for="sales_notifications">New Sales Notifications</label>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" name="notification_settings" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Notification Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Preferences -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-user-cog me-2"></i>User Preferences</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'settings' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="default_theme" class="form-label">Default Theme</label>
+                        <select id="default_theme" name="default_theme" class="form-select">
+                            <option value="light" {% if settings.default_theme == 'light' %}selected{% endif %}>Light</option>
+                            <option value="dark" {% if settings.default_theme == 'dark' %}selected{% endif %}>Dark</option>
+                            <option value="system" {% if settings.default_theme == 'system' %}selected{% endif %}>System Default</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="items_per_page" class="form-label">Items Per Page (Tables)</label>
+                        <select id="items_per_page" name="items_per_page" class="form-select">
+                            <option value="10" {% if settings.items_per_page == 10 %}selected{% endif %}>10</option>
+                            <option value="25" {% if settings.items_per_page == 25 %}selected{% endif %}>25</option>
+                            <option value="50" {% if settings.items_per_page == 50 %}selected{% endif %}>50</option>
+                            <option value="100" {% if settings.items_per_page == 100 %}selected{% endif %}>100</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_format" class="form-label">Date Format</label>
+                        <select id="date_format" name="date_format" class="form-select">
+                            <option value="MM/DD/YYYY" {% if settings.date_format == 'MM/DD/YYYY' %}selected{% endif %}>MM/DD/YYYY (e.g., 05/31/2025)</option>
+                            <option value="DD/MM/YYYY" {% if settings.date_format == 'DD/MM/YYYY' %}selected{% endif %}>DD/MM/YYYY (e.g., 31/05/2025)</option>
+                            <option value="YYYY-MM-DD" {% if settings.date_format == 'YYYY-MM-DD' %}selected{% endif %}>YYYY-MM-DD (e.g., 2025-05-31)</option>
+                            <option value="M d, Y" {% if settings.date_format == 'M d, Y' %}selected{% endif %}>Month D, YYYY (e.g., May 31, 2025)</option>
+                        </select>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" name="user_preferences" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save User Preferences</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>System Information</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>System Version:</span>
+                        <span class="badge bg-secondary rounded-pill">1.0.0</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Last Updated:</span>
+                        <span>{{ now|date:"F d, Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Database Size:</span>
+                        <span>{{ db_size|default:"N/A" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Total Users:</span>
+                        <span class="badge bg-primary rounded-pill">{{ user_count|default:"0" }}</span>
+                    </li>
+                     <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Python Version:</span>
+                        <span>{{ python_version|default:"N/A" }}</span>
+                    </li>
+                     <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Django Version:</span>
+                        <span>{{ django_version|default:"N/A" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enable/disable notification sub-options based on global setting
+    const emailNotificationsCheckbox = document.getElementById('email_notifications');
+    const lowStockAlertsCheckbox = document.getElementById('low_stock_alerts');
+    const salesNotificationsCheckbox = document.getElementById('sales_notifications');
+
+    function toggleNotificationOptions() {
+        const isEnabled = emailNotificationsCheckbox.checked;
+        if (lowStockAlertsCheckbox) lowStockAlertsCheckbox.disabled = !isEnabled;
+        if (salesNotificationsCheckbox) salesNotificationsCheckbox.disabled = !isEnabled;
+    }
+
+    if (emailNotificationsCheckbox) {
+        emailNotificationsCheckbox.addEventListener('change', toggleNotificationOptions);
+        // Initial state check
+        toggleNotificationOptions();
+    }
+
+    // Theme selection logic (might be redundant if handled globally in base.html)
+    const themeSelect = document.querySelector('select[name="default_theme"]');
+    if (themeSelect) {
+        themeSelect.addEventListener('change', function() {
+            // This might just save the preference; actual theme switching might be handled elsewhere
+            console.log('Default theme preference changed to:', this.value);
+            // Add logic here if this specific page needs to react immediately to theme change
+        });
+    }
+});
+</script>
+{% endblock %}
+

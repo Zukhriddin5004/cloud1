@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | ERP Suite</title>
+    <!-- Modern Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Link to the new stylesheet -->
+    <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <style>
+        /* Add specific styles for login page if needed, 
+           but prefer using classes from the main style.css */
+        body {
+            /* Override body style from main CSS if it uses flex/grid */
+            display: flex; /* Keep flex for centering */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Use gradient from style.css login-container or a simpler one */
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+        }
+        /* Ensure dark mode works if theme toggle is present */
+        body.dark-mode {
+             background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        }
+    </style>
+</head>
+<body class="{% if request.COOKIES.themePreference == 'dark' %}dark-mode{% endif %}">
+    <!-- Optional Theme Toggle for Login Page -->
+    <button class="theme-toggle" id="themeToggle" style="position: absolute; top: 20px; right: 20px; z-index: 10;">
+        <i class="fas {% if request.COOKIES.themePreference == 'dark' %}fa-sun{% else %}fa-moon{% endif %}"></i>
+    </button>
+
+    <div class="login-container"> <!-- Use class from style.css -->
+        <div class="login-box"> <!-- Use class from style.css -->
+            <h2><i class="fas fa-cubes"></i> ERP Suite Login</h2>
+            <p>Please enter your credentials to access the system.</p>
+            
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required placeholder="Enter your username">
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-sign-in-alt"></i> Login</button>
+            </form>
+            <!-- Optional: Add links like "Forgot Password?" here -->
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle Logic (copied from base.html for standalone use)
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            const THEME_KEY = 'themePreference';
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+            function applyTheme(theme) {
+                const icon = themeToggle ? themeToggle.querySelector('i') : null;
+                if (theme === 'dark') {
+                    body.classList.add('dark-mode');
+                    if(icon) icon.classList.replace('fa-moon', 'fa-sun');
+                    if(themeToggle) themeToggle.title = 'Switch to Light Mode';
+                } else {
+                    body.classList.remove('dark-mode');
+                    if(icon) icon.classList.replace('fa-sun', 'fa-moon');
+                    if(themeToggle) themeToggle.title = 'Switch to Dark Mode';
+                }
+                 // Set cookie for Django backend to potentially read
+                document.cookie = `${THEME_KEY}=${theme};path=/;max-age=31536000;SameSite=Lax`;
+            }
+
+            let currentTheme = document.cookie.split('; ').find(row => row.startsWith(THEME_KEY))?.split('=')[1];
+            if (!currentTheme) {
+                 currentTheme = localStorage.getItem(THEME_KEY); // Fallback to localStorage
+            }
+            if (!currentTheme) {
+                currentTheme = prefersDark.matches ? 'dark' : 'light';
+            }
+            applyTheme(currentTheme);
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    currentTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+                    localStorage.setItem(THEME_KEY, currentTheme); // Keep localStorage sync
+                    applyTheme(currentTheme);
+                });
+            }
+
+            prefersDark.addEventListener('change', (e) => {
+                if (!localStorage.getItem(THEME_KEY) && !document.cookie.includes(THEME_KEY)) {
+                    currentTheme = e.matches ? 'dark' : 'light';
+                    applyTheme(currentTheme);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

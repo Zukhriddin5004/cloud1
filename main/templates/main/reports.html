@@ -1,0 +1,337 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Reports | ERP Suite{% endblock %}
+
+{% block header_title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card report-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Total Sales Revenue</h6>
+                        <h4 class="card-title mb-0">${{ total_sales_amount|floatformat:2|default:"0.00" }}</h4>
+                    </div>
+                    <div class="avatar bg-light-primary text-primary">
+                        <i class="fas fa-dollar-sign fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card report-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Total Products</h6>
+                        <h4 class="card-title mb-0">{{ total_products|default:"0" }}</h4>
+                    </div>
+                    <div class="avatar bg-light-success text-success">
+                        <i class="fas fa-box fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card report-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Active Employees</h6>
+                        <h4 class="card-title mb-0">{{ total_employees|default:"0" }}</h4>
+                    </div>
+                    <div class="avatar bg-light-info text-info">
+                        <i class="fas fa-users fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card report-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle text-muted mb-1">Low Stock Items</h6>
+                        <h4 class="card-title mb-0">{{ low_stock_count|default:"0" }}</h4>
+                    </div>
+                    <div class="avatar bg-light-warning text-warning">
+                        <i class="fas fa-exclamation-triangle fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Sales Performance Chart -->
+    <div class="col-lg-7">
+        <div class="chart-card h-100">
+            <div class="chart-header">
+                <h3 class="chart-title">Sales Performance</h3>
+                <div class="chart-actions btn-group btn-group-sm" role="group" aria-label="Sales Period Filter">
+                    <button type="button" class="btn btn-outline-primary time-filter active" data-period="week" data-chart="salesChart">Week</button>
+                    <button type="button" class="btn btn-outline-primary time-filter" data-period="month" data-chart="salesChart">Month</button>
+                    <button type="button" class="btn btn-outline-primary time-filter" data-period="year" data-chart="salesChart">Year</button>
+                </div>
+            </div>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Sales by Category Chart -->
+    <div class="col-lg-5">
+        <div class="chart-card h-100">
+            <div class="chart-header">
+                <h3 class="chart-title">Sales by Category</h3>
+                <!-- Add filters if needed -->
+            </div>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Performance Table -->
+<div class="table-container mb-4">
+    <div class="table-header">
+        <h3 class="table-title">Employee Performance</h3>
+        <div class="table-actions">
+            <button class="btn btn-sm btn-outline-secondary" id="exportEmployeeBtn"><i class="fas fa-download me-1"></i> Export</button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Position</th>
+                    <th>Sales Count</th>
+                    <th>Sales Amount</th>
+                    <th>Performance Indicator</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.name }}</td>
+                    <td>{{ employee.position }}</td>
+                    <td>{{ employee.sales_count }}</td>
+                    <td>${{ employee.sales_amount|floatformat:2|default:"0.00" }}</td>
+                    <td>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ employee.performance_percentage }}%;" aria-valuenow="{{ employee.performance_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No employee performance data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Sales Table -->
+<div class="table-container">
+    <div class="table-header">
+        <h3 class="table-title">Recent Sales</h3>
+        <div class="table-actions">
+            <a href="{% url 'sales' %}" class="btn btn-sm btn-outline-secondary">View All Sales <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in recent_sales %}
+                <tr>
+                    <td>{{ sale.product.name }}</td>
+                    <td>{{ sale.employee.name }}</td>
+                    <td>{{ sale.date_time|date:"M d, Y H:i" }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>${{ sale.price|floatformat:2 }}</td>
+                    <td>${{ sale.total_price|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No recent sales recorded.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    const labelColor = isDarkMode ? '#adb5bd' : '#6c757d';
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim();
+    const primaryColorRgb = hexToRgb(primaryColor);
+    const primaryColorTransparent = `rgba(${primaryColorRgb.r}, ${primaryColorRgb.g}, ${primaryColorRgb.b}, 0.2)`;
+
+    // Helper function to convert hex to RGB
+    function hexToRgb(hex) {
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    // --- Sales Chart --- 
+    const salesCtx = document.getElementById('salesChart')?.getContext('2d');
+    let salesChartInstance;
+    if (salesCtx) {
+        salesChartInstance = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: {{ sales_dates|default:"[]"|safe }},
+                datasets: [{
+                    label: 'Sales Revenue',
+                    data: {{ sales_data|default:"[]"|safe }},
+                    backgroundColor: primaryColorTransparent,
+                    borderColor: primaryColor,
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: primaryColor,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor },
+                        ticks: { color: labelColor }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: labelColor }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDarkMode ? '#212529' : '#fff',
+                        titleColor: isDarkMode ? '#f8f9fa' : '#212529',
+                        bodyColor: isDarkMode ? '#f8f9fa' : '#212529',
+                        borderColor: isDarkMode ? '#444c56' : '#dee2e6',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Category Chart --- 
+    const categoryCtx = document.getElementById('categoryChart')?.getContext('2d');
+    if (categoryCtx) {
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ category_names|default:"[]"|safe }},
+                datasets: [{
+                    data: {{ category_data|default:"[]"|safe }},
+                    backgroundColor: [
+                        '#0d6efd', '#198754', '#6f42c1', '#212529', 
+                        '#ffc107', '#fd7e14', '#dc3545', '#6c757d'
+                        // Add more colors if needed
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: labelColor }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Chart period filter buttons --- 
+    document.querySelectorAll('.time-filter').forEach(button => {
+        button.addEventListener('click', function() {
+            const chartId = this.dataset.chart;
+            const period = this.dataset.period;
+            const chartInstance = (chartId === 'salesChart') ? salesChartInstance : null; // Add other charts if needed
+
+            if (!chartInstance) return;
+
+            // Update active button state
+            this.parentElement.querySelectorAll('.time-filter').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            // Fetch data for selected period
+            // Replace with your actual API endpoint
+            fetch(`/api/sales-data/?period=${period}`) 
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                 })
+                .then(data => {
+                    // Update chart data
+                    chartInstance.data.labels = data.labels;
+                    chartInstance.data.datasets[0].data = data.values;
+                    chartInstance.update();
+                })
+                .catch(error => {
+                    console.error(`Error fetching ${chartId} data for period ${period}:`, error);
+                    // Optionally display an error message to the user
+                });
+        });
+    });
+
+    // --- Export functionality --- 
+    const exportEmployeeBtn = document.getElementById('exportEmployeeBtn');
+    if (exportEmployeeBtn) {
+        exportEmployeeBtn.addEventListener('click', function() {
+            // Replace with your actual export URL
+            window.location.href = '{% url "export_employees" %}'; 
+            console.log('Exporting employee performance data...');
+        });
+    }
+});
+</script>
+{% endblock %}
+
