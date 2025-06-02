@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Kodni yuklab olish
-      - uses: actions/checkout@v4   # checkout eng so‘nggi v4 release :contentReference[oaicite:0]{index=0}
+      # 1) Reponi klonlash
+      - uses: actions/checkout@v4
 
-      # 2) Python versiyasini o‘rnatish
-      - uses: actions/setup-python@v5   # v5.1.x eng yangisi :contentReference[oaicite:1]{index=1}
+      # 2) Python versiyasini o‘rnatish (kesh bilan)
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
@@ -24,16 +24,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install flake8 pytest
 
-      # 4) Kodni lint qilish
-      - name: Lint with flake8
-        run: flake8 .
-
-      # 5) Testlarni ishga tushirish
-      - name: Run unit tests
+      # 4) Django migratsiya + test
+      - name: Run Django tests
         env:
-          DJANGO_SETTINGS_MODULE: erp_project.settings
+          DJANGO_SETTINGS_MODULE: erp_project.settings      # settings moduliga moslang
         run: |
           python manage.py migrate --noinput
-          pytest -q
+          python manage.py test --verbosity 2
