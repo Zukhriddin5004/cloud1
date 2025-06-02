@@ -7,7 +7,7 @@ urlpatterns = [
     path('products/', views.products, name='products'),
     path('products/add/', views.add_product, name='add_product'),
     path('products/edit/<int:product_id>/', views.edit_product, name='edit_product'),
-    path('products/delete/<int:product_id>/', views.delete_product, name='delete_product'),
+    path('inventory/delete/<int:inventory_id>/', views.delete_inventory, name='delete_inventory'),
     path('sales/', views.sales, name='sales'),
     path('sales/add/', views.add_sale, name='add_sale'),
     path('sales/view/<int:sale_id>/', views.view_sale, name='view_sale'),
@@ -32,4 +32,7 @@ urlpatterns = [
     path('api/employee-performance/', views.api_employee_performance, name='api_employee_performance'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('products/<int:product_id>/delete/', views.delete_product, name='delete_product'),
+    path('sales/<int:sale_id>/delete/', views.delete_sale, name='delete_sale'),
+    path('employees/<int:employee_id>/delete/', views.delete_employee, name='delete_employee'),
 ]

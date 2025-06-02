@@ -184,37 +184,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const areaBgColor = isDarkMode ? 'rgba(88, 166, 255, 0.1)' : 'rgba(52, 152, 219, 0.1)';
     const lineColor = isDarkMode ? '#58a6ff' : '#3498db';
 
-    // --- Sales Chart --- 
+    // --- Sales Chart as Horizontal Bar ---
     const salesCtx = document.getElementById('salesChart')?.getContext('2d');
     let salesChartInstance;
     if (salesCtx) {
         salesChartInstance = new Chart(salesCtx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: {{ sales_dates|safe }},
+                labels: {{ sales_dates|safe }},     // e.g. ['Jan', 'Feb', 'Mar', ...]
                 datasets: [{
                     label: 'Sales',
-                    data: {{ sales_data|safe }},
-                    backgroundColor: areaBgColor,
-                    borderColor: lineColor,
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointBackgroundColor: pointColor,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    fill: true
+                    data: {{ sales_data|safe }},    // e.g. [10, 25, 15, ...]
+                    backgroundColor: areaBgColor,    // can be a single color or an array
+                    borderColor: lineColor,          // optional: border around each bar
+                    borderWidth: 1,                  // adjust as desired
+                // Remove tension/fill/point properties since we're in 'bar' mode
                 }]
             },
             options: {
+                indexAxis: 'x',       // <-- makes it a horizontal bar chart
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: {
+                    x: {
                         beginAtZero: true,
                         grid: { color: gridColor },
                         ticks: { color: labelColor }
                     },
-                    x: {
+                    y: {
                         grid: { display: false },
                         ticks: { color: labelColor }
                     }
@@ -232,6 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 
     // --- Categories Chart --- 
     const categoriesCtx = document.getElementById('categoriesChart')?.getContext('2d');

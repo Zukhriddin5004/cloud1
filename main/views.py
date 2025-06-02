@@ -431,6 +431,15 @@ def delete_inventory(request, inventory_id):
     return render(request, 'main/delete_inventory.html', context)
 
 @login_required
+def delete_inventory(request, inventory_id):
+    if request.method == 'POST':
+        inventory = get_object_or_404(Inventory, pk=inventory_id)
+        inventory.delete()
+        return redirect('inventory')
+    # (You could also redirect or raise 405 if GET—just be sure it matches your logic.)
+
+
+@login_required
 def employees(request):
     """Display and manage employees"""
     employees_list = Employee.objects.all()
@@ -572,22 +581,13 @@ def edit_employee(request, employee_id):
 
 @login_required
 def delete_employee(request, employee_id):
-    """Delete an employee"""
-    employee = get_object_or_404(Employee, id=employee_id)
-    
     if request.method == 'POST':
-        # Delete associated user if it exists
-        if employee.user:
-            employee.user.delete()
-        
+        employee = get_object_or_404(Employee, pk=employee_id)
         employee.delete()
         return redirect('employees')
-    
-    context = {
-        'employee': employee,
-    }
-    
-    return render(request, 'main/delete_employee.html', context)
+    # You could return a 405 or simply redirect if someone tries GET.
+    return redirect('employees')
+
 
 @login_required
 def reports(request):

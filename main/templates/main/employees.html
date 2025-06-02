@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Employees | ERP Suite{% endblock %}
+{% block title %}Employees | ERP{% endblock %}
 
 {% block header_title %}Employee Management{% endblock %}
 
@@ -156,7 +156,12 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete Employee</button>
+                    <form id="deleteEmployeeForm" method="post" action="">
+                        {% csrf_token %}
+    <!-- … confirmation text … -->
+                        <button type="submit" class="btn btn-danger">Delete Employee</button>
+                    </form>
+
                 </div>
             </form>
         </div>
@@ -213,52 +218,6 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteForm.action = `/employees/${employeeId}/delete/`; // Adjust URL pattern as needed
         });
     }
-
-    // --- Optional: Employee Performance Chart --- 
-    // const performanceCtx = document.getElementById('employeePerformanceChart')?.getContext('2d');
-    // if (performanceCtx) {
-    //     const isDarkMode = document.body.classList.contains('dark-mode');
-    //     const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-    //     const labelColor = isDarkMode ? '#adb5bd' : '#6c757d';
-    //     const barColor = isDarkMode ? 'rgba(88, 166, 255, 0.7)' : 'rgba(52, 152, 219, 0.8)';
-    //     const barHoverColor = isDarkMode ? 'rgba(88, 166, 255, 0.9)' : 'rgba(52, 152, 219, 1)';
-
-    //     const performanceChart = new Chart(performanceCtx, {
-    //         type: 'bar',
-    //         data: {
-    //             labels: {{ employee_names|safe }},
-    //             datasets: [{
-    //                 label: 'Sales Count',
-    //                 data: {{ employee_sales|safe }},
-    //                 backgroundColor: barColor,
-    //                 borderColor: barColor,
-    //                 borderWidth: 1,
-    //                 hoverBackgroundColor: barHoverColor
-    //             }]
-    //         },
-    //         options: {
-    //             responsive: true,
-    //             maintainAspectRatio: false,
-    //             indexAxis: 'y', // Horizontal bars might be better for many employees
-    //             scales: {
-    //                 x: {
-    //                     beginAtZero: true,
-    //                     grid: { color: gridColor },
-    //                     ticks: { color: labelColor }
-    //                 },
-    //                 y: {
-    //                     grid: { display: false },
-    //                     ticks: { color: labelColor }
-    //                 }
-    //             },
-    //             plugins: {
-    //                 legend: { display: false }
-    //             }
-    //         }
-    //     });
-
-    //     // Add time filter logic similar to dashboard if needed
-    // }
 });
 </script>
 {% endblock %}

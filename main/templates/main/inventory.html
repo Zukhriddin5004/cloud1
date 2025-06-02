@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Inventory | ERP Suite{% endblock %}
+{% block title %}Inventory | ERP {% endblock %}
 
 {% block header_title %}Inventory Management{% endblock %}
 
@@ -227,7 +227,11 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete Record</button>
+                    <form id="deleteInventoryForm" method="post" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete Record</button>
+                    </form>
+
                 </div>
             </form>
         </div>
@@ -280,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             productNameSpan.textContent = productName;
             // Construct the delete URL dynamically
-            deleteForm.action = `/inventory/${inventoryId}/delete/`; // Adjust URL pattern as needed
+            deleteForm.action = `/inventory/delete/${inventoryId}/`; // Adjust URL pattern as needed
         });
     }
 });
