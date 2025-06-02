@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | ERP Suite</title>
+    <title>Login | ERP</title>
     <!-- Modern Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +40,7 @@
     <div class="login-container"> <!-- Use class from style.css -->
         <div class="login-box"> <!-- Use class from style.css -->
             <h2><i class="fas fa-user-circle"></i>Login</h2>
-            <p>Please enter your credentials to access the system.</p>
+            <p>Please enter your username and password to login.</p>
             
             {% if error %}
                 <div class="alert alert-danger" role="alert">
@@ -58,7 +58,7 @@
                     <label for="password" class="form-label">Password</label>
                     <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
                 </div>
-                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-sign-in-alt"></i> Login</button>
+                <button type="submit" class="btn btn-success w-100"><i class="fas fa-sign-in-alt align-items-center"></i> Login</button>
             </form>
             <!-- Optional: Add links like "Forgot Password?" here -->
         </div>
