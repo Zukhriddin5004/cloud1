@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Kodni yuklab olish
+      - uses: actions/checkout@v4   # checkout eng so‘nggi v4 release :contentReference[oaicite:0]{index=0}
+
+      # 2) Python versiyasini o‘rnatish
+      - uses: actions/setup-python@v5   # v5.1.x eng yangisi :contentReference[oaicite:1]{index=1}
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      # 3) Kutubxonalarni o‘rnatish
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 pytest
+
+      # 4) Kodni lint qilish
+      - name: Lint with flake8
+        run: flake8 .
+
+      # 5) Testlarni ishga tushirish
+      - name: Run unit tests
+        env:
+          DJANGO_SETTINGS_MODULE: erp_project.settings
+        run: |
+          python manage.py migrate --noinput
+          pytest -q

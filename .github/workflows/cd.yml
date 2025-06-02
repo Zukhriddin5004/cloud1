@@ -1,0 +1,50 @@
+name: CD
+
+# Qo‘lda “Run workflow” tugmasi bilan ham, main ga push bo‘lganda ham ishga tushishi
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://zuxriddin.sobirjon.codes   # ixtiyoriy, Actions UI’da chiqadi
+
+    steps:
+      # 1) Repo ni klonlash
+      - uses: actions/checkout@v4
+
+      # 2) SSH keyni agentga yuklash
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.9.1      # eng so‘nggi v0.9.1 :contentReference[oaicite:2]{index=2}
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      # 3) Serverga deploy skriptini ishga tushirish
+      - name: Deploy to production
+        env:
+          DJANGO_SETTINGS_MODULE: erp_project.settings
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            set -e
+            cd /var/www/cloud1
+            git fetch --all
+            git reset --hard origin/main
+
+            # Virtualenv’ni faollashtirish
+            source venv/bin/activate
+
+            pip install --upgrade pip
+            pip install -r requirements.txt
+  
+            # Migratsiyalar va statik fayllar
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
+
+            # Xizmatlarni restart qilish
+            sudo systemctl restart gunicorn
+            sudo systemctl reload nginx
+          EOF

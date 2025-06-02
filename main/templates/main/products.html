@@ -215,7 +215,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Export functionality --- 
+    // --- Export functionality ---
     const exportBtn = document.getElementById('exportProductsBtn');
     if (exportBtn) {
         exportBtn.addEventListener('click', function() {
@@ -227,14 +227,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- Delete Product Modal Logic --- 
+    // --- Delete Product Modal Logic ---
     const deleteProductModal = document.getElementById('deleteProductModal');
     if (deleteProductModal) {
         deleteProductModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const productId = button.getAttribute('data-product-id');
             const productName = button.getAttribute('data-product-name');
-            
+
             const productNameSpan = deleteProductModal.querySelector('#productNameToDelete');
             const deleteForm = deleteProductModal.querySelector('#deleteProductForm');
 
